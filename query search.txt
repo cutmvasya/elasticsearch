@@ -1,0 +1,292 @@
+GET _cat/shards?v
+
+//delete indices
+DELETE michelin
+//create indices
+
+GET /bank,bank_lain/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "match": {
+            "lastname": "duke"
+          }
+        }
+      ]
+    }
+  }, 
+ "size": 50,
+ "aggs": {
+    "age": {
+      "range": {
+        "field": "age",
+        "ranges": [
+          { "from": 40},
+          { "from": 30, "to": 40 },
+          { "from": 20, "to": 30 },
+          { "to": 20 }
+        ]
+      }
+    }
+  }
+}
+
+GET bank/_search
+{
+  "aggs": {
+    "gender": {
+      "terms": {
+        "field": "gender.keyword"
+      },
+      "aggs": {
+        "balance": {
+          "terms": {
+            "field": "balance"
+          }
+        },
+        "avg_balance": {
+          "avg": {
+            "field": "balance"
+          }
+        }
+      }
+    }
+  }
+}
+
+GET michelin/_search
+{
+  "size": 20,  
+  "sort": [
+      {"name.keyword": "asc"}      
+  ]
+}
+
+
+PUT products_dummy
+{
+  "settings": {
+    "index": {
+      "number_of_shards": 3,  
+      "number_of_replicas": 1 
+    }
+  }
+}
+
+
+GET /search-michelin, michelin/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "match": {
+            "region.prefix": "singa"
+          }
+        }
+      ]
+    }
+  }
+}
+
+POST search-michelin/_search
+
+
+GET michelin/_search
+
+
+GET michelin/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "match": {
+            "city": "san"
+          }
+        }
+      ]
+    }
+  }, 
+  "aggs": {
+    "cities": {
+      "terms": {
+        "field": "city.keyword",
+        "size": 50
+      }
+    },
+    "locations": {
+      "terms": {
+        "field": "price.keyword",
+        "size": 50
+      }
+    }
+  }
+}
+
+POST _sql?format=txt
+{
+  "query": "select * from michelin where year = 2018"
+}
+
+GET /search-michelin,michelin/_search
+{ 
+  "query": {
+    "match": {
+      "year.keyword": "2018"
+    }
+  },
+  "indices_boost": [
+    {
+      "search-michelin": 3
+    }
+  ]
+}
+
+GET /_search
+{
+  "from": 30,
+  "size": 50
+}
+
+POST /search-michelin/_doc/3
+{
+    "name": "Carpe Diem",
+    "year": "2019",
+    "pin": {
+        "location": {
+            "lat": "47.80001",
+            "lon": "13.04006"
+        }
+    },
+    "city": "Salzburg",
+    "region": "Austria",
+    "zipCode": "5020",
+    "cuisine": "Market cuisine",
+    "price": "$$$$$",
+    "url": "https://guide.michelin.com/at/en/salzburg-region/salzburg/restaurant/carpe-diem",
+    "star": "1"
+}
+
+POST search-michelin/_update/1
+{
+  "doc": {
+    "name": "Pfefferschiff"
+  }
+}
+DELETE search-michelin/_doc/3
+
+GET search-michelin/_search
+
+GET michelin/_search
+{
+  "size": 20
+}
+
+GET /michelin
+{
+  "settings": {
+    "index":{
+      "number_of_shards": 3,  
+      "number_of_replicas": 2 
+    }
+  }
+}
+
+GET /michelin/_search
+{
+  "from": 0, 
+  "size": 5, 
+  "query": {
+    "match": {
+      "year.keyword": 2019
+    }
+  },
+  "track_total_hits": true
+}
+
+GET michelin/_search
+{
+  "query": {
+    "bool": {
+      "must_not": [
+        {
+          "match": {
+            "year.keyword": "2019"
+          }
+        }
+      ]
+    }
+  }
+}
+
+GET /michelin/_search_shards
+
+GET /michelin/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "match": {
+            "price.keyword": "$$$"
+          }
+        },
+       {
+         "match_phrase": {
+           "city.keyword": "ran"
+         }
+       }
+      ]
+    }
+  }
+}
+
+GET kibana_sample_data_ecommerce
+
+GET /kibana_sample_data_ecommerce/_search
+{
+	"query": {
+		"bool": {
+			"must": [{
+				"match": {
+					"products.category": "Men's Shoes"
+				}
+			}]
+		}
+	},
+		"aggs": {
+			"price_ranges": {
+				"range": {
+					"field": "products.price",
+					"ranges": [{
+							"to": 100.0
+						},
+						{
+							"from": 100.0,
+							"to": 200.0
+						},
+						{
+							"from": 200.0
+						}
+				]
+			}
+		}
+	}
+}
+
+GET kibana_sample_data_ecommerce/_search
+{
+  "aggs": {
+    "avg_price": { "avg": { "field": "products.price" } },
+    "t_shirts": {
+      "filter": { "term": { "type": "t-shirts" } },
+      "aggs": {
+        "avg_price": { "avg": { "field": "products.price" } }
+      }
+    }
+  }
+}
+
